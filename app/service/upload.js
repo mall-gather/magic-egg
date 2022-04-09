@@ -29,12 +29,11 @@ class UploadService extends Service {
       remoteFileStream.on('finish', async () => {
         if (errFlag) return;
         resolve({
-          fileName,
-          url: 'app/public/comfiles/' + fileName,
+          name: fileName,
+          url: 'http://localhost:7001/public/comfiles/' + fileName,
         });
       });
     });
-    console.log(stream);
     return result;
   }
 }
