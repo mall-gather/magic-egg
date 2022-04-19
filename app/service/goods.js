@@ -31,6 +31,21 @@ class GoodsService extends Service {
     const total = await app.mysql.query(sql);
     return total[0].total;
   }
+  async getGoods(goods_id) {
+    const {
+      app,
+    } = this;
+    const goodsSql = 'select * from goods where goods_id=?';
+    const specificationSql = 'select * from specification where article_number=?';
+    const goods = await app.mysql.query(goodsSql, [ goods_id ]);
+    const specification = await app.mysql.query(specificationSql, [ goods[0].article_number ]);
+
+    goods.map(item => {
+      item.specification = specification;
+      return item;
+    });
+    return goods[0];
+  }
 }
 
 module.exports = GoodsService;

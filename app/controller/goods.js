@@ -19,6 +19,19 @@ class GoodsController extends Controller {
     };
 
   }
+  async getGoods() {
+    const {
+      ctx,
+    } = this;
+
+    const query = ctx.query;
+    const goods = await ctx.service.goods.getGoods(query.goods_id);
+
+    ctx.body = {
+      code: 200,
+      data: goods,
+    };
+  }
 }
 
 module.exports = GoodsController;

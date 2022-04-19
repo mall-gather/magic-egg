@@ -15,7 +15,7 @@ class AdminController extends Controller {
       const token = app.jwt.sign({
         account: data.account,
       }, app.config.jwt.secret, {
-        expiresIn: '1h',
+        expiresIn: '3h',
       });
       ctx.body = {
         code: 200,
