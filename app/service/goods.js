@@ -3,8 +3,12 @@
 const {
   Service,
 } = require('egg');
+const {
+  timestamp,
+} = require('../utils/time');
 
 class GoodsService extends Service {
+  // 查询商品列表
   async getGoodsList(currentPage, pageSize) {
     const {
       app,
@@ -19,10 +23,11 @@ class GoodsService extends Service {
                     group by g.goods_id 
                         limit ?,?`;
     const start = (currentPage - 1) * pageSize;
-    const end = currentPage * pageSize;
-    const goods = await app.mysql.query(sql, [ start, end ]);
+    const row = Number(pageSize);
+    const goods = await app.mysql.query(sql, [ start, row ]);
     return goods;
   }
+  // 查询商品总数
   async getGoodsTotal() {
     const {
       app,
@@ -31,6 +36,7 @@ class GoodsService extends Service {
     const total = await app.mysql.query(sql);
     return total[0].total;
   }
+  // 查询商品信息
   async getGoods(goods_id) {
     const {
       app,
@@ -45,6 +51,122 @@ class GoodsService extends Service {
       return item;
     });
     return goods[0];
+  }
+  // 删除商品
+  async deleteGoods(article_number) {
+    const {
+      app,
+    } = this;
+    const deleteData = await app.mysql.delete('goods', {
+      article_number,
+    });
+    const deleteArticleNumber = await app.mysql.delete('specification', {
+      article_number,
+    });
+    return {
+      deleteData,
+      deleteArticleNumber,
+    };
+  }
+  // 添加商品
+  async addGoods(data) {
+    const {
+      app,
+    } = this;
+
+    const goodsData = {
+      article_number: data.article_number,
+      category_id: data.category_id,
+      goods_name: data.goods_name,
+      goods_pic: data.goods_pic,
+      infor: data.infor,
+      create_time: timestamp(),
+      goods_carousel: data.goods_carousel,
+      goods_details: data.goods_details,
+      goods_avatar: data.goods_avatar,
+      status: 1,
+    };
+    const goods = await app.mysql.insert('goods', goodsData);
+
+    let specificationNum = null;
+    const specificationList = data.specification;
+    for (let index = 0; index < specificationList.length; index++) {
+      const specificationData = {
+        article_number: data.article_number,
+        specification_name1: specificationList[index].specification_name1,
+        specification_value1: specificationList[index].specification_value1,
+        specification_name2: specificationList[index].specification_name2,
+        specification_value2: specificationList[index].specification_value2,
+        goods_pic: specificationList[index].goods_pic,
+        inventory: specificationList[index].inventory,
+      };
+      const specification = await app.mysql.insert('specification', specificationData);
+      specificationNum += specification.affectedRows;
+    }
+    return {
+      goods,
+      specificationNum,
+    };
+  }
+  // 查询货号
+  async getArticleNumber(article_number) {
+    const {
+      app,
+    } = this;
+
+    const articleNumber = await app.mysql.get('goods', {
+      article_number,
+    });
+
+    return articleNumber;
+  }
+  // 更新商品信息
+  async upDataGoods(data) {
+    const {
+      app,
+    } = this;
+
+    const goodsData = {
+      article_number: data.article_number,
+      category_id: data.category_id,
+      goods_name: data.goods_name,
+      goods_pic: data.goods_pic,
+      infor: data.infor,
+      goods_carousel: data.goods_carousel,
+      goods_details: data.goods_details,
+      goods_avatar: data.goods_avatar,
+    };
+    const goodsOptions = {
+      where: {
+        goods_id: data.goods_id,
+      },
+    };
+    const goods = await app.mysql.update('goods', goodsData, goodsOptions);
+
+    let specificationNum = null;
+    const specificationList = data.specification;
+    for (let index = 0; index < specificationList.length; index++) {
+      const specificationData = {
+        specification_name1: specificationList[index].specification_name1,
+        specification_value1: specificationList[index].specification_value1,
+        specification_name2: specificationList[index].specification_name2,
+        specification_value2: specificationList[index].specification_value2,
+        goods_pic: specificationList[index].goods_pic,
+        inventory: specificationList[index].inventory,
+      };
+      const specificationOptions = {
+        where: {
+          specification_id: specificationList[index].specification_id,
+        },
+      };
+      const specification = await app.mysql.update('specification', specificationData, specificationOptions);
+      specificationNum += specification.affectedRows;
+    }
+
+    return {
+      goods,
+      specificationNum,
+    };
   }
 }
 
