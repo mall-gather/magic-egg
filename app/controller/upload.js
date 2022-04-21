@@ -5,6 +5,7 @@ class UploadController extends Controller {
     const {
       ctx,
     } = this;
+
     const data = await ctx.service.upload.uploadImg();
 
     if (data) {

@@ -26,7 +26,7 @@ class AdminController extends Controller {
     }
   }
 
-  // 这个是之前测试验证写的
+  // 测试验证
   async index() {
     const {
       ctx,
