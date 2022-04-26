@@ -6,6 +6,9 @@ const {
 const {
   timestamp,
 } = require('../utils/time');
+const {
+  queryDifferentArray,
+} = require('../utils/queryDifferentArray');
 
 class GoodsService extends Service {
   // 查询商品列表
@@ -125,7 +128,7 @@ class GoodsService extends Service {
     const {
       app,
     } = this;
-
+    // 商品
     const goodsData = {
       article_number: data.article_number,
       category_id: data.category_id,
@@ -142,15 +145,15 @@ class GoodsService extends Service {
       },
     };
     const goods = await app.mysql.update('goods', goodsData, goodsOptions);
-
+    // 商品规格
     let specificationNum = null;
     const specificationList = data.specification;
     for (let index = 0; index < specificationList.length; index++) {
       const specificationData = {
         specification_name1: specificationList[index].specification_name1,
         specification_value1: specificationList[index].specification_value1,
-        specification_name2: specificationList[index].specification_name2,
-        specification_value2: specificationList[index].specification_value2,
+        specification_name2: specificationList[index].specification_name2 || '',
+        specification_value2: specificationList[index].specification_value2 || '',
         goods_pic: specificationList[index].goods_pic,
         inventory: specificationList[index].inventory,
       };
@@ -163,10 +166,88 @@ class GoodsService extends Service {
       specificationNum += specification.affectedRows;
     }
 
+    if (specificationNum === 0) {
+      // 如果更新规格时，不存在规格则执行
+      for (let index = 0; index < specificationList.length; index++) {
+        const specificationData = {
+          article_number: data.article_number,
+          specification_name1: specificationList[index].specification_name1,
+          specification_value1: specificationList[index].specification_value1,
+          specification_name2: specificationList[index].specification_name2,
+          specification_value2: specificationList[index].specification_value2,
+          goods_pic: specificationList[index].goods_pic,
+          inventory: specificationList[index].inventory,
+        };
+        const specification = await app.mysql.insert('specification', specificationData);
+        specificationNum += specification.affectedRows;
+      }
+    } else if (specificationNum !== specificationList.length) {
+      // 在编辑时添加新的规格
+      for (let index = specificationNum; index < specificationList.length; index++) {
+        const specificationData = {
+          article_number: data.article_number,
+          specification_name1: specificationList[index].specification_name1,
+          specification_value1: specificationList[index].specification_value1,
+          specification_name2: specificationList[index].specification_name2,
+          specification_value2: specificationList[index].specification_value2,
+          goods_pic: specificationList[index].goods_pic,
+          inventory: specificationList[index].inventory,
+        };
+        const specification = await app.mysql.insert('specification', specificationData);
+        const specificationDataList = await this.getSpecification(goodsData.article_number);
+        specificationList[index].specification_id = specificationDataList[index].specification_id;
+        specificationNum += specification.affectedRows;
+      }
+    }
+    // 对比规格是否存在
+    const specificationDataList = await this.getSpecification(goodsData.article_number);
+    const deleteData = queryDifferentArray(specificationDataList, specificationList);
+    for (let index = 0; index < deleteData.length; index++) {
+      await app.mysql.delete('specification', {
+        specification_id: deleteData[index].specification_id,
+      });
+    }
     return {
       goods,
       specificationNum,
     };
+  }
+  // 查询商品规格
+  async getSpecification(article_number) {
+    const {
+      app,
+    } = this;
+
+    const sql = 'select * from specification where article_number=?';
+    const specification = await app.mysql.query(sql, [ article_number ]);
+
+    return specification;
+  }
+  // 更新商品规格
+  async upDataSpecification(data) {
+    const {
+      app,
+    } = this;
+    let specificationNum = null;
+    const specificationList = data.specification;
+    for (let index = 0; index < specificationList.length; index++) {
+      const specificationData = {
+        specification_name1: specificationList[index].specification_name1,
+        specification_value1: specificationList[index].specification_value1,
+        specification_name2: specificationList[index].specification_name2 || '',
+        specification_value2: specificationList[index].specification_value2 || '',
+        goods_pic: specificationList[index].goods_pic,
+        inventory: specificationList[index].inventory,
+      };
+      const specificationOptions = {
+        where: {
+          specification_id: specificationList[index].specification_id,
+        },
+      };
+      const specification = await app.mysql.update('specification', specificationData, specificationOptions);
+      specificationNum += specification.affectedRows;
+    }
+    return specificationNum === specificationList.length ? specificationNum : null;
   }
 }
 

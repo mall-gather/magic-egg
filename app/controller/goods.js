@@ -106,6 +106,51 @@ class GoodsController extends Controller {
       ctx.body = ctx.logger.error();
     }
   }
+  // 查询商品规格
+  async getSpecification() {
+    const {
+      ctx,
+    } = this;
+
+    const query = ctx.query;
+
+    const specification = await ctx.service.goods.getSpecification(query.article_number);
+    if (specification.length) {
+      ctx.body = {
+        code: 200,
+        data: specification,
+      };
+    } else {
+      ctx.body = ctx.logger.error();
+    }
+  }
+  // 更新商品规格
+  async upDataSpecification() {
+    const {
+      ctx,
+    } = this;
+    const data = ctx.request.body;
+    const specification = await ctx.service.goods.upDataSpecification(data);
+    if (specification) {
+      ctx.body = {
+        code: 200,
+        data: '修改成功',
+      };
+    } else {
+      ctx.body = ctx.logger.error();
+    }
+  }
+  // 添加分类
+  async addCategory() {
+    const {
+      ctx,
+    } = this;
+
+    ctx.body = {
+      code: 200,
+      data: '添加成功',
+    };
+  }
 }
 
 module.exports = GoodsController;
