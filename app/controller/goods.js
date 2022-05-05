@@ -140,17 +140,6 @@ class GoodsController extends Controller {
       ctx.body = ctx.logger.error();
     }
   }
-  // 添加分类
-  async addCategory() {
-    const {
-      ctx,
-    } = this;
-
-    ctx.body = {
-      code: 200,
-      data: '添加成功',
-    };
-  }
 }
 
 module.exports = GoodsController;
