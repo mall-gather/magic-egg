@@ -17,10 +17,15 @@ module.exports = app => {
   router.get('/api/getorder', jwt, controller.order.getOrder);
   router.get('/api/getordertracking', jwt, controller.order.getOrderTracking);
   router.get('/api/getlogisticscompany', jwt, controller.order.getLogisticsCompany);
+  router.get('/api/querylogisticscompany', jwt, controller.order.queryLogisticsCompany);
+  router.get('/api/getreturnreason', jwt, controller.order.getReturnReason);
+  router.get('/api/getorderstatistics', jwt, controller.adminhome.getOrderStatistics);
+
 
   router.post('/api/admin/login', controller.admin.login);
   router.post('/api/addgoods', jwt, controller.goods.addGoods);
   router.post('/api/addcategory', jwt, controller.category.addCategory);
+  router.post('/api/addreason', jwt, controller.order.addReason);
   router.post('/file/upload', jwt, controller.upload.uploadImg);
 
   router.put('/api/updatagoods', jwt, controller.goods.upDataGoods);
@@ -31,8 +36,10 @@ module.exports = app => {
   router.put('/api/updataorderremark', jwt, controller.order.updataOrderRemark);
   router.put('/api/updatacloseorder', jwt, controller.order.updataCloseOrder);
   router.put('/api/updataordershipped', jwt, controller.order.updataOrderShipped);
+  router.put('/api/updatareason', jwt, controller.order.updataReason);
 
   router.delete('/api/deletegoods', jwt, controller.goods.deleteGoods);
   router.delete('/api/deletecategory', jwt, controller.category.deleteCategory);
   router.delete('/api/deleteorder', jwt, controller.order.deleteOrder);
+  router.delete('/api/deletereason', jwt, controller.order.deleteReason);
 };

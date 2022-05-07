@@ -68,7 +68,7 @@ class GoodsController extends Controller {
       ctx.body = ctx.logger.error();
     }
   }
-  // 查询货号
+  // 查询货号是否存在
   async getArticleNumber() {
     const {
       ctx,

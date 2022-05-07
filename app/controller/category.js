@@ -30,7 +30,7 @@ class CategoryController extends Controller {
       ctx.body = ctx.logger.error();
     }
   }
-  // 查询商品分类
+  // 查询商品分类列表
   async getCategoryList() {
     const {
       ctx,

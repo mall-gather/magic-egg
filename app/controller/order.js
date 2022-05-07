@@ -69,6 +69,18 @@ class OrderController extends Controller {
       data: logisticsCompany,
     };
   }
+  // 查询物流公司
+  async queryLogisticsCompany() {
+    const {
+      ctx,
+    } = this;
+    const query = ctx.query;
+    const logisticsCompany = await ctx.service.order.queryLogisticsCompany(query.company_id);
+    ctx.body = {
+      code: 200,
+      data: logisticsCompany,
+    };
+  }
   // 修改收货人信息
   async updataConsigneeInfo() {
     const {
@@ -147,6 +159,68 @@ class OrderController extends Controller {
       ctx.body = {
         code: 200,
         data: '发货成功',
+      };
+    } else {
+      ctx.body = ctx.logger.error();
+    }
+  }
+  // 退货原因
+  async getReturnReason() {
+    const {
+      ctx,
+    } = this;
+    const query = ctx.query;
+    const total = await ctx.service.order.getReturnReasonTotal();
+    const returnReason = await ctx.service.order.getReturnReason(query.currentPage, query.pageSize);
+    ctx.body = {
+      code: 200,
+      total,
+      data: returnReason,
+    };
+  }
+  // 编辑退货原因
+  async updataReason() {
+    const {
+      ctx,
+    } = this;
+    const data = ctx.request.body;
+    const reason = await ctx.service.order.updataReason(data);
+    if (reason) {
+      ctx.body = {
+        code: 200,
+        data: '修改成功',
+      };
+    } else {
+      ctx.body = ctx.logger.error();
+    }
+  }
+  // 添加退货原因
+  async addReason() {
+    const {
+      ctx,
+    } = this;
+    const data = ctx.request.body;
+    const reason = await ctx.service.order.addReason(data);
+    if (reason) {
+      ctx.body = {
+        code: 200,
+        data: '添加成功',
+      };
+    } else {
+      ctx.body = ctx.logger.error();
+    }
+  }
+  // 删除原因
+  async deleteReason() {
+    const {
+      ctx,
+    } = this;
+    const query = ctx.query;
+    const reason = await ctx.service.order.deleteReason(query.reason_id);
+    if (reason) {
+      ctx.body = {
+        code: 200,
+        data: '删除成功',
       };
     } else {
       ctx.body = ctx.logger.error();

@@ -3,6 +3,9 @@
 const {
   Service,
 } = require('egg');
+const {
+  timestamp,
+} = require('../utils/time');
 
 class OrderService extends Service {
   // 查询订单列表
@@ -59,11 +62,16 @@ class OrderService extends Service {
 											on o.coupon_id=c.coupon_id
                       where o.order_id=?`;
     const order = await app.mysql.query(orderSql, [ order_id ]);
-    const orderGoodsSql = `select *
-                       from ordergoods o 
-                       left join specification s 
-                       on o.specification_id=s.specification_id 
-                       where o.order_id=?`;
+    const orderGoodsSql = `select o.*,
+                                s.article_number,
+                                s.specification_name1,
+                                s.specification_value1,
+                                s.specification_name2,
+                                s.specification_value2
+                                from ordergoods o 
+                                left join specification s 
+                                on o.specification_id=s.specification_id 
+                                where o.order_id=?`;
     const orderGoods = await app.mysql.query(orderGoodsSql, [ order_id ]);
 
     order[0].orderGoods = orderGoods;
@@ -91,6 +99,16 @@ class OrderService extends Service {
       app,
     } = this;
     const logisticsCompany = await app.mysql.select('logisticscompany');
+    return logisticsCompany;
+  }
+  // 查询物流公司
+  async queryLogisticsCompany(company_id) {
+    const {
+      app,
+    } = this;
+    const logisticsCompany = await app.mysql.get('logisticscompany', {
+      company_id,
+    });
     return logisticsCompany;
   }
   // 修改收货人信息
@@ -192,6 +210,74 @@ class OrderService extends Service {
     const orderShipped = await app.mysql.update('order', row, options);
 
     return orderShipped.affectedRows;
+  }
+  // 退货原因
+  async getReturnReason(currentPage, pageSize) {
+    const {
+      app,
+    } = this;
+    const sql = 'select * from reason limit ?,?';
+    const start = (currentPage - 1) * pageSize;
+    const row = Number(pageSize);
+
+    const returnReason = await app.mysql.query(sql, [ start, row ]);
+
+    return returnReason;
+  }
+  // 退货原因总数
+  async getReturnReasonTotal() {
+    const {
+      app,
+    } = this;
+    const sql = 'select count(reason_id) as total from reason';
+    const total = await app.mysql.query(sql);
+    return total[0].total;
+  }
+  // 编辑退货原因
+  async updataReason(data) {
+    const {
+      app,
+    } = this;
+
+    const row = {
+      reason_type: data.reason_type,
+      available: data.available,
+      add_time: timestamp(),
+    };
+    const options = {
+      where: {
+        reason_id: data.reason_id,
+      },
+    };
+    const reason = await app.mysql.update('reason', row, options);
+    return reason.affectedRows;
+  }
+  // 添加退货原因
+  async addReason(data) {
+    const {
+      app,
+    } = this;
+
+    const row = {
+      reason_type: data.reason_type,
+      available: data.available,
+      add_time: timestamp(),
+    };
+
+    const reason = await app.mysql.insert('reason', row);
+    console.log(reason);
+    return reason.affectedRows;
+  }
+  // 删除原因
+  async deleteReason(reason_id) {
+    const {
+      app,
+    } = this;
+
+    const reason = await app.mysql.delete('reason', {
+      reason_id,
+    });
+    return reason.affectedRows;
   }
 }
 
