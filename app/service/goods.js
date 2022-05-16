@@ -81,6 +81,7 @@ class GoodsService extends Service {
       article_number: data.article_number,
       category_id: data.category_id,
       goods_name: data.goods_name,
+      goods_price: data.goods_price,
       infor: data.infor,
       create_time: timestamp(),
       goods_carousel: data.goods_carousel,
@@ -132,6 +133,7 @@ class GoodsService extends Service {
       article_number: data.article_number,
       category_id: data.category_id,
       goods_name: data.goods_name,
+      goods_price: data.goods_price,
       infor: data.infor,
       goods_carousel: data.goods_carousel,
       goods_details: data.goods_details,
@@ -218,6 +220,17 @@ class GoodsService extends Service {
 
     const sql = 'select * from specification where article_number=?';
     const specification = await app.mysql.query(sql, [ article_number ]);
+
+    return specification;
+  }
+  // id查询商品规格
+  async getSpecificationId(specification_id) {
+    const {
+      app,
+    } = this;
+
+    const sql = 'select * from specification where specification_id=?';
+    const specification = await app.mysql.query(sql, [ specification_id ]);
 
     return specification;
   }

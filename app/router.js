@@ -5,6 +5,8 @@
  */
 module.exports = app => {
   const { router, controller, jwt } = app;
+
+  // 后台
   router.get('/api/admin/index', jwt, controller.admin.index);
   router.get('/api/querygoods', jwt, controller.goods.getGoodsList);
   router.get('/api/category', jwt, controller.category.getCategoryColumnList);
@@ -42,4 +44,23 @@ module.exports = app => {
   router.delete('/api/deletecategory', jwt, controller.category.deleteCategory);
   router.delete('/api/deleteorder', jwt, controller.order.deleteOrder);
   router.delete('/api/deletereason', jwt, controller.order.deleteReason);
+
+  // 前台
+  router.get('/api/forward/querygoods', controller.goods.getGoodsList);
+  router.get('/api/forward/getgoods', controller.goods.getGoods);
+  router.get('/api/forward/getspecification', controller.goods.getSpecification);
+  router.get('/api/forward/getaddress', jwt, controller.address.getAddress);
+
+  router.post('/api/forward/login', controller.users.login);
+  router.post('/api/forward/register', controller.users.register);
+  router.post('/api/forward/addaddress', jwt, controller.address.addAddress);
+  // 添加购物车
+  router.post('/api/forward/addcart', jwt, controller.cart.addCart);
+
+  // 修改收货地址
+  router.put('/api/forward/updataaddress', jwt, controller.address.updataAddress);
+
+  // 删除收货地址
+  router.delete('/api/forward/deleteaddress', jwt, controller.address.deleteAddress);
+
 };

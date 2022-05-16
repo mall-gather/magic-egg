@@ -113,16 +113,31 @@ class GoodsController extends Controller {
     } = this;
 
     const query = ctx.query;
-
-    const specification = await ctx.service.goods.getSpecification(query.article_number);
-    if (specification.length) {
-      ctx.body = {
-        code: 200,
-        data: specification,
-      };
-    } else {
-      ctx.body = ctx.logger.error();
+    // 货号查
+    if (query.article_number) {
+      const specification = await ctx.service.goods.getSpecification(query.article_number);
+      if (specification.length) {
+        ctx.body = {
+          code: 200,
+          data: specification,
+        };
+      } else {
+        ctx.body = ctx.logger.error();
+      }
     }
+    // id查
+    if (query.specification_id) {
+      const specification = await ctx.service.goods.getSpecificationId(query.specification_id);
+      if (specification.length) {
+        ctx.body = {
+          code: 200,
+          data: specification[0],
+        };
+      } else {
+        ctx.body = ctx.logger.error();
+      }
+    }
+
   }
   // 更新商品规格
   async upDataSpecification() {
