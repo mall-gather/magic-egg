@@ -16,6 +16,18 @@ class OrderController extends Controller {
       data: orderList,
     };
   }
+  // 查询用户订单列表
+  async getUserOrderList() {
+    const {
+      ctx,
+    } = this;
+    const data = ctx.request.body;
+    const orderList = await ctx.service.order.getUserOrderList(data);
+    ctx.body = {
+      code: 200,
+      data: orderList,
+    };
+  }
   // 删除订单
   async deleteOrder() {
     const {

@@ -28,6 +28,13 @@ class OrderService extends Service {
 
     return orderList;
   }
+  // 查询用户订单列表
+  async getUserOrderList(data) {
+    const {
+      app,
+    } = this;
+    return;
+  }
   // 查询订单总数
   async getOrderTotal() {
     const {

@@ -50,6 +50,10 @@ module.exports = app => {
   router.get('/api/forward/getgoods', controller.goods.getGoods);
   router.get('/api/forward/getspecification', controller.goods.getSpecification);
   router.get('/api/forward/getaddress', jwt, controller.address.getAddress);
+  // 查询购物车
+  router.get('/api/forward/getcart', jwt, controller.cart.getCart);
+  // 查询订单列表
+  router.get('/api/forward/getuserorderlist', jwt, controller.order.getUserOrderList);
 
   router.post('/api/forward/login', controller.users.login);
   router.post('/api/forward/register', controller.users.register);
@@ -59,8 +63,12 @@ module.exports = app => {
 
   // 修改收货地址
   router.put('/api/forward/updataaddress', jwt, controller.address.updataAddress);
+  // 修改购物车商品数量
+  router.put('/api/forward/updatacartnum', jwt, controller.cart.updataCartNum);
 
   // 删除收货地址
   router.delete('/api/forward/deleteaddress', jwt, controller.address.deleteAddress);
+  // 删除购物车商品
+  router.delete('/api/forward/deletecart', jwt, controller.cart.deleteCart);
 
 };
