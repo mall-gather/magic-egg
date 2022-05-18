@@ -54,4 +54,14 @@ function convertTime(fmt, timestamp) {
   return fmt;
 }
 
-module.exports = { timestamp, getTime, convertTime };
+// 倒计时
+function countdown(timestamp) {
+  const time = new Date();
+  if (timestamp - time.getTime() > 0) {
+    return timestamp - time.getTime();
+  }
+  return 0;
+
+}
+
+module.exports = { timestamp, getTime, convertTime, countdown };

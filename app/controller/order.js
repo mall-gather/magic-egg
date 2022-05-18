@@ -21,11 +21,23 @@ class OrderController extends Controller {
     const {
       ctx,
     } = this;
-    const data = ctx.request.body;
-    const orderList = await ctx.service.order.getUserOrderList(data);
+    const query = ctx.query;
+    const order = await ctx.service.order.getUserOrderList(query.u_id, query.order_status);
     ctx.body = {
       code: 200,
-      data: orderList,
+      data: order,
+    };
+  }
+  // 查询用户订单列表
+  async getUserOrder() {
+    const {
+      ctx,
+    } = this;
+    const query = ctx.query;
+    const order = await ctx.service.order.getUserOrder(query.u_id, query.order_id);
+    ctx.body = {
+      code: 200,
+      data: order,
     };
   }
   // 删除订单
@@ -233,6 +245,21 @@ class OrderController extends Controller {
       ctx.body = {
         code: 200,
         data: '删除成功',
+      };
+    } else {
+      ctx.body = ctx.logger.error();
+    }
+  }
+  // 提交订单
+  async submitOrders() {
+    const { ctx } = this;
+    const data = ctx.request.body;
+
+    const order = await ctx.service.order.submitOrders(data);
+    if (order) {
+      ctx.body = {
+        code: 200,
+        data: '提交成功',
       };
     } else {
       ctx.body = ctx.logger.error();

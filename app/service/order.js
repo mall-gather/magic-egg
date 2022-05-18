@@ -5,7 +5,11 @@ const {
 } = require('egg');
 const {
   timestamp,
+  countdown,
 } = require('../utils/time');
+const {
+  v4: uuidv4,
+} = require('uuid');
 
 class OrderService extends Service {
   // 查询订单列表
@@ -29,11 +33,108 @@ class OrderService extends Service {
     return orderList;
   }
   // 查询用户订单列表
-  async getUserOrderList(data) {
+  async getUserOrderList(u_id, order_status) {
     const {
       app,
     } = this;
-    return;
+
+    // 查询订单
+    const orderUidAll = await app.mysql.select('order', {
+      where: {
+        u_id,
+      },
+    });
+    for (let index = 0; index < orderUidAll.length; index++) {
+      if (orderUidAll[index].order_status === 1) {
+        if (countdown(orderUidAll[index].end_time) === 0) {
+          await app.mysql.update('order', {
+            order_status: -1,
+          }, {
+            where: {
+              order_id: orderUidAll[index].order_id,
+            },
+          });
+        }
+      }
+    }
+
+    if (Number(order_status) !== 0) {
+      // 查询订单
+      const order = await app.mysql.select('order', {
+        where: {
+          u_id,
+          order_status,
+        },
+      });
+      // 查询订单包含的商品
+      for (let index = 0; index < order.length; index++) {
+        const ordergoodsData = await app.mysql.select('ordergoods', {
+          where: {
+            order_id: order[index].order_id,
+          },
+        });
+        for (let i = 0; i < ordergoodsData.length; i++) {
+          const specificationData = await app.mysql.get('specification', {
+            specification_id: ordergoodsData[i].specification_id,
+          });
+          ordergoodsData[i].specification = specificationData;
+        }
+        order[index].ordergoods = ordergoodsData;
+      }
+      return order;
+    }
+
+    // 查询用户全部订单
+    const order = await app.mysql.select('order', {
+      where: {
+        u_id,
+      },
+      orders: [
+        [ 'create_time', 'desc' ],
+      ],
+    });
+    // 查询订单包含的商品
+    for (let index = 0; index < order.length; index++) {
+      const ordergoodsData = await app.mysql.select('ordergoods', {
+        where: {
+          order_id: order[index].order_id,
+        },
+      });
+      for (let i = 0; i < ordergoodsData.length; i++) {
+        const specificationData = await app.mysql.get('specification', {
+          specification_id: ordergoodsData[i].specification_id,
+        });
+        ordergoodsData[i].specification = specificationData;
+      }
+      order[index].ordergoods = ordergoodsData;
+    }
+
+    return order;
+  }
+  // 查询用户订单列表
+  async getUserOrder(u_id, order_id) {
+    const {
+      app,
+    } = this;
+
+    const order = await app.mysql.get('order', {
+      u_id,
+      order_id,
+    });
+    const orderGoods = await app.mysql.select('ordergoods', {
+      where: {
+        order_id,
+      },
+    });
+    for (let index = 0; index < orderGoods.length; index++) {
+      const specification = await app.mysql.get('specification', {
+        specification_id: orderGoods[index].specification_id,
+      });
+      orderGoods[index].specification = specification;
+    }
+    order.orderGoods = orderGoods;
+
+    return order;
   }
   // 查询订单总数
   async getOrderTotal() {
@@ -285,6 +386,60 @@ class OrderService extends Service {
       reason_id,
     });
     return reason.affectedRows;
+  }
+  // 提交订单
+  async submitOrders(data) {
+    const {
+      app,
+    } = this;
+    const row = {
+      order_id: uuidv4(),
+      u_id: data.u_id,
+      item_count: data.item_count,
+      goods_amount_tatol: data.goods_amount_tatol,
+      order_amount_tatal: data.order_amount_tatal,
+      order_status: data.order_status,
+      pay_channel: data.pay_channel,
+      coupon_id: data.coupon_id,
+      zipcode: data.zipcode,
+      consignee: data.consignee,
+      telephone: data.telephone,
+      address_region: data.address_region,
+      address_detailed: data.address_detailed,
+      note: data.note,
+      order_freight: data.order_freight,
+      create_time: timestamp(),
+      end_time: timestamp() + (30 * 60 * 1000),
+    };
+    const order = await app.mysql.insert('order', row);
+
+    let orderGoodsNum = 0;
+    for (let index = 0; index < data.orderGoods.length; index++) {
+      const row2 = {
+        order_id: row.order_id,
+        goods_id: data.orderGoods[index].goods_id,
+        goods_avatar: data.orderGoods[index].goods_avatar,
+        goods_name: data.orderGoods[index].goods_name,
+        specification_id: data.orderGoods[index].specification_id,
+        goods_pic: data.orderGoods[index].goods_pic,
+        goods_num: data.orderGoods[index].goods_num,
+        state: data.order_status,
+      };
+      const orderGoodsData = await app.mysql.insert('ordergoods', row2);
+      if (data.orderGoods[index].cart_id) {
+        await app.mysql.delete('cart', {
+          cart_id: data.orderGoods[index].cart_id,
+        });
+      }
+      orderGoodsNum += orderGoodsData.affectedRows;
+    }
+
+    if (order.affectedRows === 1 && orderGoodsNum === data.orderGoods.length) {
+      return true;
+    }
+    return false;
+
+
   }
 }
 

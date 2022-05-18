@@ -6,6 +6,8 @@
 module.exports = app => {
   const { router, controller, jwt } = app;
 
+  // const xmlParseMiddleware = app.middleware.xmlParse();
+
   // 后台
   router.get('/api/admin/index', jwt, controller.admin.index);
   router.get('/api/querygoods', jwt, controller.goods.getGoodsList);
@@ -54,12 +56,16 @@ module.exports = app => {
   router.get('/api/forward/getcart', jwt, controller.cart.getCart);
   // 查询订单列表
   router.get('/api/forward/getuserorderlist', jwt, controller.order.getUserOrderList);
+  // 用户查询订单详情
+  router.get('/api/forward/getuserorder', jwt, controller.order.getUserOrder);
 
   router.post('/api/forward/login', controller.users.login);
   router.post('/api/forward/register', controller.users.register);
   router.post('/api/forward/addaddress', jwt, controller.address.addAddress);
   // 添加购物车
   router.post('/api/forward/addcart', jwt, controller.cart.addCart);
+  // 提交订单
+  router.post('/api/forward/submitorders', jwt, controller.order.submitOrders);
 
   // 修改收货地址
   router.put('/api/forward/updataaddress', jwt, controller.address.updataAddress);
@@ -70,5 +76,13 @@ module.exports = app => {
   router.delete('/api/forward/deleteaddress', jwt, controller.address.deleteAddress);
   // 删除购物车商品
   router.delete('/api/forward/deletecart', jwt, controller.cart.deleteCart);
+
+  // -------------
+  // 支付
+  // router.post('/api/forward/paymoney', jwt, controller.pay.payMoney);
+  // 路由片段示例 注意相关的中间件，不再config中配置全局的，直接在路由中引入，特别说明下这个xmlParseMiddleware中间件下面会有配置说明
+  router.get('/pay/ali', controller.pay.ali); // 支付宝支付
+  router.get('/pay/ali/return', controller.pay.aliReturn); // 支付宝支付成功回调
+  // router.post('/pay/ali/notify', xmlParseMiddleware, controller.pay.payMoney); // 支付成功异步通知 注意关闭csrf验证
 
 };
