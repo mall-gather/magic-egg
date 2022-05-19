@@ -6,7 +6,7 @@
 module.exports = app => {
   const { router, controller, jwt } = app;
 
-  // const xmlParseMiddleware = app.middleware.xmlParse();
+  const xmlParseMiddleware = app.middleware.xmlparse();
 
   // 后台
   router.get('/api/admin/index', jwt, controller.admin.index);
@@ -83,6 +83,6 @@ module.exports = app => {
   // 路由片段示例 注意相关的中间件，不再config中配置全局的，直接在路由中引入，特别说明下这个xmlParseMiddleware中间件下面会有配置说明
   router.get('/pay/ali', controller.pay.ali); // 支付宝支付
   router.get('/pay/ali/return', controller.pay.aliReturn); // 支付宝支付成功回调
-  // router.post('/pay/ali/notify', xmlParseMiddleware, controller.pay.payMoney); // 支付成功异步通知 注意关闭csrf验证
+  router.post('/pay/ali/notify', xmlParseMiddleware, controller.pay.payMoney); // 支付成功异步通知 注意关闭csrf验证
 
 };

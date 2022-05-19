@@ -259,12 +259,13 @@ class OrderController extends Controller {
     if (order) {
       ctx.body = {
         code: 200,
-        data: '提交成功',
+        data: order,
       };
     } else {
       ctx.body = ctx.logger.error();
     }
   }
+
 }
 
 module.exports = OrderController;

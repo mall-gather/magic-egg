@@ -435,11 +435,29 @@ class OrderService extends Service {
     }
 
     if (order.affectedRows === 1 && orderGoodsNum === data.orderGoods.length) {
-      return true;
+      return {
+        order_id: row.order_id,
+        order_amount_tatal: row.order_amount_tatal,
+      };
     }
     return false;
 
 
+  }
+  // 支付订单
+  async orderPay(order_id) {
+    const { app } = this;
+
+    const orderPay = await app.mysql.update('order', {
+      order_status: 2,
+    },
+    {
+      where: {
+        order_id,
+      },
+    });
+
+    return orderPay.affectedRows;
   }
 }
 
